@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:luxury_glow/screens/menu.dart';
+import 'package:luxury_glow/widgets/left_drawer.dart';
 
 class ProductEntryFormPage extends StatefulWidget {
   const ProductEntryFormPage({super.key});
@@ -10,169 +16,152 @@ class ProductEntryFormPage extends StatefulWidget {
 class _ProductEntryFormPageState extends State<ProductEntryFormPage> {
   final _formKey = GlobalKey<FormState>();
   String _name = "";
-  int _price = 0;
   String _description = "";
-  String _shade = "";
-  int _stockQuantity = 0;
-
+  int _price = 0;
   @override
   Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Produk Baru'),
+        title: const Center(
+          child: Text(
+            'Form Tambah Produk',
+          ),
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: const Color.fromARGB(255, 72, 81, 156),
       ),
+      drawer: const LeftDrawer(),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Input Name
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Name",
-                    border: OutlineInputBorder(),
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Product",
+                  labelText: "Enter Product Name",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
                   ),
-                  onChanged: (value) => setState(() => _name = value),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Name cannot be empty!";
-                    }
-                    if (value.trim().split(RegExp(r'\s+')).length > 5) {
-                      return "Name must not exceed 5 words!";
-                    }
-                    return null;
-                  },
                 ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _name = value!;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Produk tidak boleh kosong!";
+                  }
+                  return null;
+                },
               ),
-              // Input Price
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Price",
-                    border: OutlineInputBorder(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Description",
+                  labelText: "Enter product description",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
                   ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) => setState(() => _price = int.tryParse(value) ?? 0),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Price cannot be empty!";
-                    }
-                    if (int.tryParse(value) == null || int.tryParse(value)! < 0) {
-                      return "Price must be a positive integer!";
-                    }
-                    return null;
-                  },
                 ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _description = value!;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Deskripsi tidak boleh kosong!";
+                  }
+                  return null;
+                },
               ),
-              // Input Description
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    border: OutlineInputBorder(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Price",
+                  labelText: "Enter product price",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
                   ),
-                  onChanged: (value) => setState(() => _description = value),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Description cannot be empty!";
-                    }
-                    if (value.trim().split(RegExp(r'\s+')).length > 30) {
-                      return "Description must not exceed 30 words!";
-                    }
-                    return null;
-                  },
                 ),
+                onChanged: (String? value) {
+                  setState(() {
+                    _price = int.tryParse(value!) ?? 0;
+                  });
+                },
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return "Price tidak boleh kosong!";
+                  }
+                  if (int.tryParse(value) == null) {
+                    return "Price harus berupa angka!";
+                  }
+                  return null;
+                },
               ),
-              // Input Shade
-              Padding(
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Shade",
-                    border: OutlineInputBorder(),
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        Theme.of(context).colorScheme.primary),
                   ),
-                  onChanged: (value) => setState(() => _shade = value),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Shade cannot be empty!";
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              // Input Stock Quantity
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: "Stock Quantity",
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (value) => setState(() => _stockQuantity = int.tryParse(value) ?? 0),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Stock Quantity cannot be empty!";
-                    }
-                    if (int.tryParse(value) == null || int.tryParse(value)! < 0) {
-                      return "Stock Quantity must be a positive integer!";
-                    }
-                    return null;
-                  },
-                ),
-              ),
-              // Save Button
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary, // Deep Purple
-                      foregroundColor: Colors.white, // White text
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Produk Berhasil Ditambahkan'),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Name: $_name'),
-                                Text('Price: $_price'),
-                                Text('Description: $_description'),
-                                Text('Shade: $_shade'),
-                                Text('Stock quantity: $_stockQuantity'),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _formKey.currentState!.reset();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
-                        );
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      // Kirim ke Django dan tunggu respons
+                      // TODO: Ganti URL dan jangan lupa tambahkan trailing slash (/) di akhir URL!
+                      final response = await request.postJson(
+                        "http://127.0.0.1:8000/create-flutter/",
+                        jsonEncode(<String, String>{
+                          'name': _name,
+                          'price': _price.toString(),
+                          'description': _description,
+                          // TODO: Sesuaikan field data sesuai dengan aplikasimu
+                        }),
+                      );
+                      if (context.mounted) {
+                        if (response['status'] == 'success') {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            content: Text("Produk baru berhasil disimpan!"),
+                          ));
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => MyHomePage()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(const SnackBar(
+                            content:
+                                Text("Terdapat kesalahan, silakan coba lagi."),
+                          ));
+                        }
                       }
-                    },
-                    child: const Text('Save'),
+                    }
+                  },
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(color: Color.fromARGB(255, 81, 132, 76)),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          ],
+        )),
       ),
     );
   }
